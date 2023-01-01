@@ -33,7 +33,7 @@ function FilterEventsPage(props) {
   }, [data]);
     
     if (!loadedEvents) {
-        return <p className='center'>Loading...</p>
+      
     }
 
     const filteredYear = filterData[0];
