@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { Fragment, useEffect, useState } from 'react';
 import useSWR from 'swr';
+import Head from 'next/head';
 
 import { getFilteredEvents } from '../../helpers/api-util';
 import EventList from '../../components/events/event-list';
@@ -17,29 +18,54 @@ function FilterEventsPage(props) {
         (url) => fetch(url).then(res => res.json())
     );
 
-     useEffect(() => {
-    if (data) {
-      const events = [];
+    useEffect(() => {
+        if (data) {
+        const events = [];
+        for (const key in data) {
+            events.push({
+            id: key,
+            ...data[key],
+            });
+        }
+        setLoadedEvents(events);
+        }
+    }, [data]);
 
-      for (const key in data) {
-        events.push({
-          id: key,
-          ...data[key],
-        });
-      }
-
-      setLoadedEvents(events);
-    }
-  }, [data]);
+    let pageHeader = (
+        <Head>
+            <title>Filtered Events</title>
+            <meta
+                name='description'
+                content='A list of filtered events'
+            />
+        </Head>
+    );
     
     if (!loadedEvents) {
-      
+        return (
+            <Fragment>
+                {pageHeader}
+                <p className='center'>Loading...</p>
+            </Fragment>
+
+        )
     }
 
     const filteredYear = filterData[0];
     const filteredMonth = filterData[1];
     const year = +filteredYear;
     const month = +filteredMonth;
+
+    pageHeader = (
+            <Head>
+                <title>Filtered Events</title>
+                <meta
+                    name='description'
+                    content={`All event for ${month}/${year}`}
+                />
+            </Head>
+    )
+
     if (
         isNaN(year) ||
         isNaN(month) ||
@@ -51,6 +77,7 @@ function FilterEventsPage(props) {
     ) {
         return (
             <Fragment>
+                {pageHeader}
                 <ErrorAlert>
                     Invalid Filter. Please Adjust your values.
                 </ErrorAlert>
@@ -72,6 +99,7 @@ function FilterEventsPage(props) {
     if (!filteredEvents || filteredEvents.length === 0) {
         return (
             <Fragment>
+                {pageHeader}
                 <ErrorAlert>
                     No Events Found.
                 </ErrorAlert>
@@ -84,6 +112,7 @@ function FilterEventsPage(props) {
     const date = new Date(year, month - 1);
     return (
         <Fragment>
+            {pageHeader}
             <ResultsTitle date={date} />
             <EventList items={filteredEvents} />
         </Fragment>
